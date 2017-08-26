@@ -1,0 +1,294 @@
+CYBERTRONIX
+   _____     __          ______                         ____ ____ __
+  / ___/_ __/ /  ___ ___/_  __/______  ___  _ __ ______/ __// / // /__
+ / /__/ // / _ \/ -_) __// / / __/ _ \/ _ \/ /\ \ /___/ _ \/_  _/  '_/
+ \___/\_, /_.__/\__/_/  /_/ /_/  \___/_//_/_//_\_\    \___/ /_//_/\_\
+     /___/                              
+
+10 June, 1977
+
+
+
+Table of Contents	1
+
+Terms                   2
+
+Introduction            3
+
+Computer Organization   4
+
+Instructions            5
+
+Calling Convention      6
+
+
+
+Address
+  A 16-bit number corresponding to a specific place in memory.
+
+Memory
+  All 64k of memory addressable by the CPU.
+
+Register Memory
+  Any memory within the first 4k of memory addressable by the CPU.
+
+Immediate
+  A specific number, not referring to a memory location.
+
+Bit
+  The smallest unit of information which can be represented. Either 0 or 1.
+
+Byte
+  A group of 8 contiguous bits occupying a single memory location.
+
+Word
+  A group of 2 contiguous bytes, or 16 contiguous bits. The smallest addressable
+  unit.
+
+Instruction
+  A single operation that the computer can do.
+
+Base Instruction
+  An Instruction that corresponds to a single opcode.
+
+Program
+  A sequence of instructions which, as a group, allow the computer to accomplish
+  a task.
+
+Stack
+  A block of memory for pushing and popping data. By convention, from 300h to
+  1000h.
+
+Instruction Pointer
+  The register address which holds the address of the current instruction.
+  Stored at memory address 0h.
+
+Stack Pointer
+  The register address which holds the current address of the top of the stack.
+  By convention, stored at memory address 1h.
+
+Base Pointer
+  A register address which holds the functions original stack pointer.
+
+Scratch Constant
+  A register which is used as scratch for when one needs to do arithmetic.
+
+nnnnb
+  nnnn represents a number in binary format
+
+
+nnnnd
+  nnnn represents a number in decimal format
+
+nnnno
+  nnnn represents a number in octal format
+
+nnnnh
+  nnnn represents a number in hexadecimal format
+
+
+
+  This manual has been written to help the reader program the CYBERTRONIX
+  CyberTronix64k microcomputer in assembler language. Accordingly, this manual
+  assumes that the reader has a good understanding of logic, but may be
+  completely unfamiliar with programming concepts.
+         
+  For those readers who do understand programming concepts, several features of
+  the CYBERTRONIX Cyber-Tronix64k microcomputer are described below. They
+  include:
+
+    * 16-bit CPU on a single chip
+    * 16 instructions, for simplicity and optimization purposes
+    * Direct addressing for 4096 words of memory
+
+  There are two ways in which programs for the 64k may be assembled: either via
+  the resident assembler or the cross assembler. The resident assembler is a
+  program which runs on the 64k, and may be loaded. The cross assembler runs on
+  any computer having a B compiler whose word size is 16 bits or greater, and
+  generates programs which run on the 64k.
+
+  The experienced programmer should note that the assembly language has a macro
+  capability which allows users to tailor the assembly language to individual
+  need.
+
+
+  This section provides the programmer with a functional overview of the 64k.
+  Information is presented in this section at a level that provides a programmer
+  with necessary background in order to write efficient programs.
+
+  To the programmer, the computer is represented as consisting of the following
+  parts:
+    * The first 4k of memory, where all data operations occur, and which provide
+      one means for addressing memory. These are similar to the ÒregistersÓ of
+      other architectures, and therefore are called Òregister memoryÓ.
+      Peripherals are also mapped here.
+    * The rest of memory, which may hold program instructions or data, and which
+      must be addressed location by location in order to access stored
+      information.
+    * The instruction pointer, at memory address 0h.
+    * The stack pointer, at memory address 1h, which enables parts of memory to
+      be used as a stack. At bootup, the stack pointer is initialized to 300h,
+      and goes up towards 1000h.
+    * Input/Output, which is the interface between a programmer and the outside
+      world. Located between 100h to 240h for the screen, and 240h to 280h for
+      other peripherals
+
+LAYOUT OF THE FIRST 4K
+
+  The 64k has a very different architecture from many of the CPUs you may be
+  used to; unlike many architectures, the 64k is designed to rely on memory
+  first. The first 4k of memory, or 1000h, is special. The first 100h is
+  designed to be used as normal register memory. 0h is the instruction pointer,
+  which is, as written above, initialized to 1000h. There is no way to change
+  where the instruction pointer is; unlike any other pseudo-register, the IP is
+  hard-coded into the CPU.  By convention, the stack pointer is next, at 1h; at
+  bootup, it is initialized to 300h. The next is the base pointer, which is at
+  2h, and also initialized to 300h; and finally, the scratch constant, which is
+  not initialized, and intended to be used for arithmetic. After these,
+  according to convention, 4h to 40h is 'callee save' register memory, which
+  will not change after a function call. From 40h to 100h, is 'scratch' register
+  memory, meaning a call can change them (also known as 'caller save'). From
+  100h to 200h is the current area of the screen.  You can offset the current
+  area by writing to 200h, which will set the top left corner. There are then
+  other peripherals, from 201h to 300h, which depend on what is physically
+  connected to your CPU.
+
+  From 300h to 1000h is the stack, which grows towards high addresses.
+
+AFTER THE FIRST 4k
+
+  The program code will be copied from a ROM disk attached to the CPU, into
+  address 1000h, and then the CPU will start executing from there.
+  There are 16 base instructions used by the 64k. Each starts with the same
+  header; a 4-bit opcode, and then a 12-bit operand. From there depends on the
+  specific opcode. These base instructions are identified by the two-letter op
+  name. There are also many pseudo-instructions, made by putting base
+  instructions together.
+
+  A note on layout: [xxx] is a single word. 'RM' stands for 'Register Memory',
+  or 12 bits of memory address, while 'MEM' stands for a full 16-bit memory
+  address. 'IMM' stands for a literal 16-bit word. The explanation uses
+  pseudo-B syntax.
+       
+  A note on overlong shifts: the behavior is as if the number had been masked
+  with 10h; in other words, it wraps.
+
+BASE INSTRUCTIONS:
+
+  MI RM,IMM       | *RM = IMM;
+    [0h|RM][IMM]
+
+  MV RM,MEM       | *RM = *MEM;
+    [1h|RM][MEM]
+
+  MD RM,MEM       | *RM = **MEM;
+    [2h|RM][MEM]
+
+  LD RM,MEM       | **RM = *MEM;
+    [3h|RM][MEM]
+
+  ST RM,MEM       | **MEM = *RM;
+    [4h|RM][MEM]
+
+  AD RM,MEM       | *RM += *MEM;
+    [5h|RM][MEM]
+
+  SB RM,MEM       | *RM -= *MEM;
+    [6h|RM][MEM]
+
+  ND RM,MEM       | *RM &= *MEM;
+    [7h|RM][MEM]
+
+  OR RM,MEM       | *RM |= *MEM;
+    [8h|RM][MEM]
+
+  XR RM,MEM       | *RM ^= *MEM;
+    [9h|RM][MEM]
+
+  SR RM,MEM       | *RM >>= *MEM; (unsigned)
+    [Ah|RM][MEM]
+
+  SL RM,MEM       | *RM <<= *MEM;
+    [Bh|RM][MEM]
+
+  SA RM,MEM       | *RM >>= *MEM; (signed)
+    [Ch|RM][MEM]
+
+  JG RM,MEM,LABEL | if (*RM > *MEM) goto LABEL;
+    [Dh|RM][MEM][IMM]
+
+  JL RM,MEM,LABEL | if (*RM < *MEM) goto LABEL;
+    [Eh|RM][MEM][IMM]
+
+  JQ RM,MEM,LABEL | if (*RM == *MEM) goto LABEL;
+    [Fh|RM][MEM][IMM]
+
+  HF              | Halt and catch fire
+    [Fh|0h][0h][FFFEh]
+
+PSEUDO-INSTRUCTIONS:
+
+  JP MEM          | goto *MEM;
+    AD IP,MEM
+
+  JPI LABEL       | goto LABEL;
+    ADI IP,LABEL
+
+  STR RM,MEM      | *MEM = *RM;
+    MI SC,RM
+    XG RM,MEM
+    MI RM,SC
+
+  INC RM          | (*RM)++;
+    MI SC,1
+    AD RM,SC
+
+  DEC RM          | (*RM)--;
+    MI SC,1
+    SB RM,SC
+
+  ADI RM,IMM      | (*RM) += IMM;
+    MI SC,IMM
+    AD RM,SC
+
+  SBI RM,IMM      | (*RM) =- IMM;
+    MI SC,IMM
+    SB RM,SC
+
+  NEG RM          | (*RM) = -(*RM)
+    MV SC,RM
+    XR RM,RM
+    SB RM,SC
+
+  PUSH MEM        | *SP++ = *MEM;
+    MV SP,MEM
+    INC SP
+
+  POP RM          | *RM = *SP--;
+    MV MEM,SP
+    DEC SP
+
+
+
+CALLING CONVENTION:
+
+  The register memory from 40h to 100h are used as argument registers. Any
+  additional arguments beyond 96 will be pushed onto the stack.
+       
+  Pointers and integers will be passed as normal, in the argument registers. Any
+  structural types which are 4 words or smaller will be passed in the registers,
+  split out into however many are required. Anything bigger than 4 words will be
+  passed as a pointer.
+
+  Returns of pointers and integers will be in 40h. Any structural types with
+  size less than 4 words will be split among 40h, 41h, 42h, and 43h as
+  necessary. Anything with a size greater than 4, the calling function must
+  allocate enough space to store the return argument, and an implicit pointer to
+  this space will be passed as the first parameter.
+
+  All register memory from 40h to 100h, and SC, may be changed inside the
+  function. All registers from 4h to 40h must be saved and restored if they are
+  changed.
+
+  SP and BP must be restored on function return.
+                                 
