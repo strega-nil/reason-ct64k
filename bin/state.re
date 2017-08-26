@@ -42,7 +42,7 @@ let get_op memory => {
   | 0xF => (Op_jq(label), true)
   | _ => failwith "unreachable"
   };
-  let fst = op_num land 0x7F;
+  let fst = op_num land 0x7FFF;
   let snd = (Memory.get memory (ip + 1));
 
   if is_jmp {
@@ -54,12 +54,61 @@ let get_op memory => {
   { op: op, fst: fst, snd: snd }
 };
 
-let next_inst memory => {
-  let op = get_op memory;
-  Opcodes.print_op op;
+let execute memory op => {
+  open Opcodes;
+
+  let write dst imm => {
+    if (dst == 0x200) { /* stdout */
+      print_char (Char.chr (imm land 0xFF))
+    } else if (op.fst == 0x201) { /* stdin */
+      /*
+        do nothing, because writing to stdin should do nothing
+      */
+      ()
+    } else {
+      Memory.set memory op.fst op.snd
+    }
+  };
+  let binop f fst snd => {
+    write fst (f (Memory.get memory fst) (Memory.get memory snd))
+  };
+
+  /*
+    TODO(ubsan): this is notably buggy, because it uses int
+    semantics, not u16 semantics
+  */
+  switch op.op {
+  | Op_mi => write op.fst op.snd
+  | Op_mv => write op.fst (Memory.get memory op.snd)
+  | Op_md =>
+    write op.fst (Memory.get memory (Memory.get memory op.snd))
+  | Op_ld =>
+    write (Memory.get memory op.fst) (Memory.get memory op.snd)
+  | Op_st =>
+    write
+      (Memory.get memory (Memory.get memory op.snd))
+      (Memory.get memory op.fst)
+  | Op_ad => binop (fun x y => x + y) op.fst op.snd
+  | Op_sb => binop (fun x y => x - y) op.fst op.snd
+  | Op_nd => binop (fun x y => x land y) op.fst op.snd
+  | Op_or => binop (fun x y => x lor y) op.fst op.snd
+  | Op_xr => binop (fun x y => x lxor y) op.fst op.snd
+  | Op_sr => binop (fun x y => x lsr y) op.fst op.snd
+  | Op_sl => binop (fun x y => x lsl y) op.fst op.snd
+  | Op_sa => binop (fun x y => x asr y) op.fst op.snd
+  | Op_jg _ => failwith "unimplemented"
+  | Op_jl _ => failwith "unimplemented"
+  | Op_jq _ => failwith "unimplemented"
+  };
+
   if (op == { op: Op_mi, fst: 0x0, snd: 0x0 }) {
     false
   } else {
     true
   }
+};
+
+let next_inst memory => {
+  let op = get_op memory;
+  execute memory op
 };
