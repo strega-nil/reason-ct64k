@@ -1,0 +1,21 @@
+opam-version: "1.2"
+name: "ct64k_emu"
+version: "0.0.1"
+maintainer: "Nicole Mazzuca <npmazzuca@gmail.com>"
+authors: [
+  "Nicole Mazzuca <npmazzuca@gmail.com>"
+]
+license: "BSD"
+homepage: "https://github.com/ubsan/reason-ct64k"
+bug-reports: "https://github.com/ubsan/reason-ct64k/issues"
+dev-repo: "git://github.com/reasonml/reason-ct64k.git"
+tags: [ "reason" "ct64k" "emulator" ]
+build: [
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "jbuilder" {build}
+  "reason"  {= "2.0.0"}
+  "re"
+]
+available: [ ocaml-version >= "4.02" & ocaml-version < "4.05" ]
