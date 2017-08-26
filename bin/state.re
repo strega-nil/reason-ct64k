@@ -42,7 +42,7 @@ let get_op memory => {
   | 0xF => (Op_jq(label), true)
   | _ => failwith "unreachable"
   };
-  let fst = op_num land 0x7FFF;
+  let fst = op_num land 0x0FFF;
   let snd = (Memory.get memory (ip + 1));
 
   if is_jmp {
@@ -60,17 +60,20 @@ let execute memory op => {
   let write dst imm => {
     if (dst == 0x200) { /* stdout */
       print_char (Char.chr (imm land 0xFF))
-    } else if (op.fst == 0x201) { /* stdin */
+    } else if (dst == 0x201) { /* stdin */
       /*
         do nothing, because writing to stdin should do nothing
       */
       ()
     } else {
-      Memory.set memory op.fst op.snd
+      Memory.set memory dst imm
     }
   };
   let binop f fst snd => {
-    write fst (f (Memory.get memory fst) (Memory.get memory snd))
+    let dst = Memory.get memory fst;
+    let src = Memory.get memory snd;
+    let res = f dst src;
+    write fst res
   };
 
   /*
@@ -80,8 +83,11 @@ let execute memory op => {
   switch op.op {
   | Op_mi => write op.fst op.snd
   | Op_mv => write op.fst (Memory.get memory op.snd)
-  | Op_md =>
-    write op.fst (Memory.get memory (Memory.get memory op.snd))
+  | Op_md => {
+    let addr = Memory.get memory op.snd;
+    let imm = Memory.get memory addr;
+    write op.fst imm
+  }
   | Op_ld =>
     write (Memory.get memory op.fst) (Memory.get memory op.snd)
   | Op_st =>
@@ -105,6 +111,27 @@ let execute memory op => {
     false
   } else {
     true
+  }
+};
+
+let rec print state start end_ => {
+  let print_row () => {
+    Printf.printf
+      "%X: [ %4X | %4X | %4X | %4X | %4X | %4X | %4X | %4X ]\n"
+      start
+      (Memory.get state (start + 0))
+      (Memory.get state (start + 1))
+      (Memory.get state (start + 2))
+      (Memory.get state (start + 3))
+      (Memory.get state (start + 4))
+      (Memory.get state (start + 5))
+      (Memory.get state (start + 6))
+      (Memory.get state (start + 7));
+  };
+
+  if (start < end_) {
+    print_row ();
+    print state (start + 8) end_
   }
 };
 

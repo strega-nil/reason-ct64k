@@ -41,9 +41,9 @@ let print_op op => {
   print_char '\n';
 };
 
-let memory_iter: array full_op => (int => unit) => unit =
-fun arr f => {
-  let g op => switch op.op {
+let memory_iter: array full_op => Iter.t int =
+fun arr => {
+  let g op f => switch op.op {
   | Op_mi => f ((0x0 lsl 12) lor op.fst); f op.snd
   | Op_mv => f ((0x1 lsl 12) lor op.fst); f op.snd 
   | Op_md => f ((0x2 lsl 12) lor op.fst); f op.snd 
@@ -61,5 +61,6 @@ fun arr f => {
   | Op_jl lbl => f ((0xD lsl 12) lor op.fst); f op.snd; f lbl
   | Op_jq lbl => f ((0xE lsl 12) lor op.fst); f op.snd; f lbl
   };
-  Array.iter g arr 
+
+  Iter.flat_map g (Iter.Array.iter arr)
 };
