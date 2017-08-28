@@ -23,6 +23,7 @@ let get_op memory => {
   let op_num = (Memory.get memory ip);
   let label = (Memory.get memory (ip + 2));
 
+
   let (op, is_jmp) = switch ((op_num lsr 12) land 0xF) {
   | 0x0 => (Op_mi, false)
   | 0x1 => (Op_mv, false)
@@ -75,6 +76,13 @@ let execute memory op => {
     let res = f dst src;
     write fst res
   };
+  let jump_cnd f fst snd lbl => {
+    let fst = Memory.get memory fst;
+    let snd = Memory.get memory snd;
+    if (f fst snd) {
+      Memory.set memory 0 lbl
+    }
+  };
 
   let asr16 lhs rhs => {
     let rhs = rhs land 15;
@@ -111,9 +119,9 @@ let execute memory op => {
   | Op_sr => binop (fun x y => x lsr y) op.fst op.snd
   | Op_sl => binop (fun x y => x lsl y) op.fst op.snd
   | Op_sa => binop (fun x y => asr16 x y) op.fst op.snd
-  | Op_jg _ => failwith "unimplemented"
-  | Op_jl _ => failwith "unimplemented"
-  | Op_jq _ => failwith "unimplemented"
+  | Op_jg lbl => jump_cnd (fun x y => x > y) op.fst op.snd lbl
+  | Op_jl lbl => jump_cnd (fun x y => x < y) op.fst op.snd lbl
+  | Op_jq lbl => jump_cnd (fun x y => x == y) op.fst op.snd lbl
   };
 
   if (op == { op: Op_mi, fst: 0x0, snd: 0x0 }) {

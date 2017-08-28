@@ -33,9 +33,9 @@ let print_op op => {
   | Op_jl lbl => ("jl", Some lbl)
   | Op_jq lbl => ("jq", Some lbl)
   };
-  Printf.printf "%s %X %X " name op.fst op.snd;
+  Printf.printf "%s %04X %04X " name op.fst op.snd;
   switch label {
-  | Some lbl => print_int lbl
+  | Some lbl => Printf.printf "%04X" lbl
   | _ => ()
   };
   print_char '\n';
@@ -59,11 +59,11 @@ fun arr => {
   | Op_sl => yield ((0xB lsl 12) lor op.fst) $ yield op.snd 
   | Op_sa => yield ((0xC lsl 12) lor op.fst) $ yield op.snd 
   | Op_jg lbl =>
-    yield ((0xC lsl 12) lor op.fst) $ yield op.snd $ yield lbl
-  | Op_jl lbl =>
     yield ((0xD lsl 12) lor op.fst) $ yield op.snd $ yield lbl
-  | Op_jq lbl =>
+  | Op_jl lbl =>
     yield ((0xE lsl 12) lor op.fst) $ yield op.snd $ yield lbl
+  | Op_jq lbl =>
+    yield ((0xF lsl 12) lor op.fst) $ yield op.snd $ yield lbl
   });
 
   Iter.flat_map g (Iter.Array.iter arr)
