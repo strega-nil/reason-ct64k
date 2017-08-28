@@ -76,10 +76,19 @@ let execute memory op => {
     write fst res
   };
 
-  /*
-    TODO(ubsan): this is notably buggy, because it uses int
-    semantics, not u16 semantics
-  */
+  let asr16 lhs rhs => {
+    let rhs = rhs land 15;
+    if (((lhs lsr 15) land 1) != 0) {
+      /* shift in ones */
+      let tmp = lhs lsr rhs;
+      let mask = 0xFFFF lxor ((1 lsl (16 - rhs)) - 1);
+      tmp lor mask
+    } else {
+      /* shift in zeroes */
+      lhs lsr rhs
+    }
+  };
+
   switch op.op {
   | Op_mi => write op.fst op.snd
   | Op_mv => write op.fst (Memory.get memory op.snd)
@@ -101,7 +110,7 @@ let execute memory op => {
   | Op_xr => binop (fun x y => x lxor y) op.fst op.snd
   | Op_sr => binop (fun x y => x lsr y) op.fst op.snd
   | Op_sl => binop (fun x y => x lsl y) op.fst op.snd
-  | Op_sa => binop (fun x y => x asr y) op.fst op.snd
+  | Op_sa => binop (fun x y => asr16 x y) op.fst op.snd
   | Op_jg _ => failwith "unimplemented"
   | Op_jl _ => failwith "unimplemented"
   | Op_jq _ => failwith "unimplemented"
@@ -117,7 +126,7 @@ let execute memory op => {
 let rec print state start end_ => {
   let print_row () => {
     Printf.printf
-      "%X: [ %4X | %4X | %4X | %4X | %4X | %4X | %4X | %4X ]\n"
+      "%X: [ %04X | %04X | %04X | %04X | %04X | %04X | %04X | %04X ]\n"
       start
       (Memory.get state (start + 0))
       (Memory.get state (start + 1))

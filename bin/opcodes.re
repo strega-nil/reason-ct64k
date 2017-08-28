@@ -56,8 +56,8 @@ fun arr => {
   | Op_or => yield ((0x8 lsl 12) lor op.fst) $ yield op.snd 
   | Op_xr => yield ((0x9 lsl 12) lor op.fst) $ yield op.snd 
   | Op_sr => yield ((0xA lsl 12) lor op.fst) $ yield op.snd 
-  | Op_sl => yield ((0xA lsl 12) lor op.fst) $ yield op.snd 
-  | Op_sa => yield ((0xB lsl 12) lor op.fst) $ yield op.snd 
+  | Op_sl => yield ((0xB lsl 12) lor op.fst) $ yield op.snd 
+  | Op_sa => yield ((0xC lsl 12) lor op.fst) $ yield op.snd 
   | Op_jg lbl =>
     yield ((0xC lsl 12) lor op.fst) $ yield op.snd $ yield lbl
   | Op_jl lbl =>
