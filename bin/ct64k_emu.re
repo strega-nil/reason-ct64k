@@ -1,9 +1,3 @@
-let test_yield: int => int => Iter.t int =
-fun fst snd => {
-  let (yield, ($)) = Iter.(yield, ($));
-  yield fst $ yield snd
-};
-
 let main () => {
   let ops: array Opcodes.full_op = [|
     { op: Opcodes.Op_mi, fst: 0x0040, snd: 0x1100 },
