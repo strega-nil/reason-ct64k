@@ -5,6 +5,11 @@ module Array = {
   };
 };
 
+let rec from_func iter f => switch (iter ()) {
+| Some el => f el; from_func iter f
+| None => ()
+};
+
 let for_each iter f => iter f;
 
 let ($) fst snd f => {

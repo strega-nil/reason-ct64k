@@ -3,6 +3,8 @@ module Array: {
   let iter: array 'a => t 'a;
 };
 
+let from_func: (unit => option 'a) => t 'a;
+
 let for_each: t 'a => ('a => unit) => unit;
 
 let yield: 'a => t 'a;
