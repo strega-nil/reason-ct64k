@@ -1,3 +1,9 @@
+let test_yield: int => int => Iter.t int =
+fun fst snd => {
+  let (yield, ($)) = Iter.(yield, ($));
+  yield fst $ yield snd
+};
+
 let main () => {
   let ops: array Opcodes.full_op = [|
     { op: Opcodes.Op_mi, fst: 0x0040, snd: 0x1100 },
@@ -27,7 +33,7 @@ let main () => {
     (Iter.Array.iter [| 'h', 'e', 'l', 'l', 'o', '!', '\n' |]);
 
   let state = State.from_iter (
-    Iter.chain (Iter.exact_size 0xFF 0 ops) data
+    Iter.(exact_size 0xFF 0 ops $ data)
   );
   State.print state 0x1000 0x1020;
   print_string " --- --- ---\n";

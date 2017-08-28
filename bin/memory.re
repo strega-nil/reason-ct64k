@@ -14,11 +14,10 @@ let from_iter size offset iter => {
     set buff !idx n;
     idx := !idx + 1;
   };
-  iter f;
+  Iter.for_each iter f;
   buff
 };
 let of_array size offset arr => {
-  let iter arr f => Array.iter f arr;
-  from_iter size offset (iter arr)
+  from_iter size offset (Iter.Array.iter arr)
 };
 

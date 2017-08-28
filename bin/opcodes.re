@@ -43,24 +43,28 @@ let print_op op => {
 
 let memory_iter: array full_op => Iter.t int =
 fun arr => {
-  let g op f => switch op.op {
-  | Op_mi => f ((0x0 lsl 12) lor op.fst); f op.snd
-  | Op_mv => f ((0x1 lsl 12) lor op.fst); f op.snd 
-  | Op_md => f ((0x2 lsl 12) lor op.fst); f op.snd 
-  | Op_ld => f ((0x3 lsl 12) lor op.fst); f op.snd 
-  | Op_st => f ((0x4 lsl 12) lor op.fst); f op.snd 
-  | Op_ad => f ((0x5 lsl 12) lor op.fst); f op.snd 
-  | Op_sb => f ((0x6 lsl 12) lor op.fst); f op.snd 
-  | Op_nd => f ((0x7 lsl 12) lor op.fst); f op.snd 
-  | Op_or => f ((0x8 lsl 12) lor op.fst); f op.snd 
-  | Op_xr => f ((0x9 lsl 12) lor op.fst); f op.snd 
-  | Op_sr => f ((0xA lsl 12) lor op.fst); f op.snd 
-  | Op_sl => f ((0xA lsl 12) lor op.fst); f op.snd 
-  | Op_sa => f ((0xB lsl 12) lor op.fst); f op.snd 
-  | Op_jg lbl => f ((0xC lsl 12) lor op.fst); f op.snd; f lbl
-  | Op_jl lbl => f ((0xD lsl 12) lor op.fst); f op.snd; f lbl
-  | Op_jq lbl => f ((0xE lsl 12) lor op.fst); f op.snd; f lbl
-  };
+  let g: full_op => Iter.t int =
+  fun op => Iter.(switch op.op {
+  | Op_mi => yield ((0x0 lsl 12) lor op.fst) $ yield op.snd
+  | Op_mv => yield ((0x1 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_md => yield ((0x2 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_ld => yield ((0x3 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_st => yield ((0x4 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_ad => yield ((0x5 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_sb => yield ((0x6 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_nd => yield ((0x7 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_or => yield ((0x8 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_xr => yield ((0x9 lsl 12) lor op.fst) $ yield op.snd 
+  | Op_sr => yield ((0xA lsl 12) lor op.fst) $ yield op.snd 
+  | Op_sl => yield ((0xA lsl 12) lor op.fst) $ yield op.snd 
+  | Op_sa => yield ((0xB lsl 12) lor op.fst) $ yield op.snd 
+  | Op_jg lbl =>
+    yield ((0xC lsl 12) lor op.fst) $ yield op.snd $ yield lbl
+  | Op_jl lbl =>
+    yield ((0xD lsl 12) lor op.fst) $ yield op.snd $ yield lbl
+  | Op_jq lbl =>
+    yield ((0xE lsl 12) lor op.fst) $ yield op.snd $ yield lbl
+  });
 
   Iter.flat_map g (Iter.Array.iter arr)
 };

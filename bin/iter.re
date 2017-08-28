@@ -5,7 +5,9 @@ module Array = {
   };
 };
 
-let chain fst snd f => {
+let for_each iter f => iter f;
+
+let ($) fst snd f => {
   fst f;
   snd f;
 };
@@ -23,10 +25,10 @@ let rec repeat num el f => {
     ()
   }
 };
+let yield el f => f el;
 
 exception IteratorTooBig;
-let exact_size: int => 'a => t 'a => t 'a =
-fun (sz: int) (default: 'a) (iter: t 'a) (f: 'a => unit) => {
+let exact_size sz default iter f => {
   let curr_idx = ref 0;
   let g: 'a => unit =
   fun el => {
