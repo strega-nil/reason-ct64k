@@ -1,3 +1,5 @@
+open Lib;
+
 type t;
 let make: array int => t;
 let from_iter: Iter.t int => t;

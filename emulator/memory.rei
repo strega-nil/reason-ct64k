@@ -1,3 +1,5 @@
+open Lib;
+
 type t;
 
 let make: int => t;

@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(library
+  ((name lib)
+    (public_name ct64k)
+  )
+)

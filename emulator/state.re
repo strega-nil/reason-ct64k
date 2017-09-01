@@ -1,3 +1,5 @@
+open Lib;
+
 type t = Memory.t;
 
 let initialize mem => {

@@ -1,4 +1,5 @@
 open Bigarray;
+open Lib;
 
 type t = Array1.t int int16_unsigned_elt c_layout;
 

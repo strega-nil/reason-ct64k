@@ -41,8 +41,7 @@ let print_op op => {
   print_char '\n';
 };
 
-let memory_iter: array full_op => Iter.t int =
-fun arr => {
+let memory_iter arr => {
   let g: full_op => Iter.t int =
   fun op => Iter.(switch op.op {
   | Op_mi => yield ((0x0 lsl 12) lor op.fst) $ yield op.snd

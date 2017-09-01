@@ -1,3 +1,5 @@
+open Lib;
+
 let ops: array Opcodes.full_op = [|
   { op: Op_mi, fst: 0x0040, snd: 0xB0FF },
   { op: Op_mi, fst: 0x0041, snd: 0x1006 },

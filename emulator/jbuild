@@ -1,8 +1,8 @@
 (jbuild_version 1)
 
 (executable
- ((name ct64k_emu)
+ ((name emulator)
   (public_name ct64k)
-  (libraries (bigarray))
+  (libraries (bigarray lib))
  )
 )
